@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import styles from './styles'
-import { Box, Button } from '@mui/material';
+import { Box, Button, Tooltip } from '@mui/material';
 import useResponsiveScale from "./userResponsiveScale";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
@@ -9,12 +9,14 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ActionButtons from './ActionButtons';
 import SignatureButtons from './SignatureButtons';
 import SignatureTypeSuggestions from './signatureTypeSuggestions/SignatureTypeSuggestions';
+import html2canvas from 'html2canvas';
 
 
 
 const SignatureDialog = (props) => {
-  const { reset, copy, type, backgroundColor, pencilColor, pencilWidth} = props
+  const { reset, copy, type, backgroundColor, pencilColor, pencilWidth, setImageBaseURL} = props
   const sigCanvas = useRef({});
+  const sigWrite = useRef({});
   const [color, setColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#FFFFFF');
   const [penWidth, setPenWidth] = React.useState(1);
@@ -23,12 +25,17 @@ const SignatureDialog = (props) => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [doneStatus, setDoneStatus] = useState(false)
   const [userSign, setUserSign] = useState("")
-
+  const [downloadPNG, setDownLoadPNG] = useState(false)
+  console.log("isEmpty in dialog: ", isEmpty)
 
   const [mode, setMode] = useState({
     draw: true,
     type: false
   })
+
+  useEffect(() => {
+    isEmpty && setUserSign("")
+  }, [isEmpty])
 
   const handleMode = (action) => {
     setMode({draw: action === "draw", type: action === "type"})
@@ -67,6 +74,35 @@ const SignatureDialog = (props) => {
   
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (sigCanvas.current && mode?.draw) {
+      const isEmpty = sigCanvas.current.isEmpty();
+      if (isEmpty) {
+        return;
+      }
+      console.log(sigCanvas.current)
+      const canvas = sigCanvas.current.getCanvas();
+      const dataURL = canvas.toDataURL('image/png');
+
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'signature.png';
+      link.click();
+    } else{
+      html2canvas(sigWrite.current, {
+        backgroundColor: null,
+        scale: 2,
+      }).then((canvas) => {
+        const link = document.createElement("a");
+        link.download = "signature.png";
+        const imageURL = canvas.toDataURL("image/png").split(",")[1];
+        setImageBaseURL(imageURL)
+        link.href = canvas.toDataURL("image/png")
+        link.click();
+      });
+    }
+  }, [downloadPNG])
   
   
   
@@ -80,21 +116,6 @@ const SignatureDialog = (props) => {
       }}
     >
       <Box className="bodyContent" style={styles.bodyContent}>
-        <Box className="suggestions" style={{display: 'flex', gap: '1rem', width: '100%', overflowX: 'scroll'}}>
-          <Button variant='outlined' style={{
-            color: "black",
-            fontWeight: 800,
-            fontSize: "1.5rem",
-            borderRadius: "20px",
-            border: "1px solid brown",
-            padding: "0.3rem 2rem",
-            display:'none'
-          }}
-          >
-            Test
-          </Button>
-        </Box>
-        
         <Box className="signatureBox" style={styles.signatureBox}>
           <Box className="signatureBoard" style={styles.signatureBoard}>
             {!doneStatus && <SignatureButtons
@@ -103,11 +124,15 @@ const SignatureDialog = (props) => {
               copy={{isEnabled: copy}}
               type={{isEnabled: type}}
               sigCanvas={sigCanvas}
+              sigWrite={sigWrite}
               bgColor={bgColor}
               handleMode={handleMode}
               setIsEmpty={setIsEmpty}
               isEmpty={isEmpty}
               setUserSign={setUserSign}
+              setDownLoadPNG={setDownLoadPNG}
+              setImageBaseURL={setImageBaseURL}
+              mode={mode}
             />}
 
             <Box className="board" style={{ ...styles.board, position: "relative" }}>
@@ -138,12 +163,14 @@ const SignatureDialog = (props) => {
                       transition: "transform 0.2s ease",
                     }}
                   >
-                    <ChevronRightIcon
-                      style={{
-                        fontSize: "1.8rem",
-                        filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
-                      }}
-                    />
+                    <Tooltip title="Expand">
+                      <ChevronRightIcon
+                        style={{
+                          fontSize: "1.8rem",
+                          filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.3))",
+                        }}
+                      />
+                    </Tooltip>
                   </span>
                 }
                 
@@ -178,17 +205,25 @@ const SignatureDialog = (props) => {
                     maxWidth={penWidth}
                   />
                 :
-                  <SignatureTypeSuggestions userSign={userSign}/>
+                  <SignatureTypeSuggestions 
+                    userSign={userSign}
+                    penColor={color}
+                    bgColor={bgColor}
+                    downloadPNG={downloadPNG}
+                    sigWrite={sigWrite}
+                  />
               }
               </ResizableBox>
             </Box>
 
-            {!doneStatus && <ActionButtons 
-              styles={styles} 
-              pen={{isEnabled: pencilWidth, value: penWidth, set: setPenWidth}}
-              penColor={{isEnabled: pencilColor, value: color, set: setColor}}
-              bgColor={{isEnabled: backgroundColor, value: bgColor, set: setBgColor}}
-            />}
+            {!doneStatus && 
+              <ActionButtons 
+                styles={styles} 
+                pen={{isEnabled: pencilWidth, value: penWidth, set: setPenWidth}}
+                penColor={{isEnabled: pencilColor, value: color, set: setColor}}
+                bgColor={{isEnabled: backgroundColor, value: bgColor, set: setBgColor}}
+              />
+            }
           </Box>
           <Box 
             className="completeStatus"
@@ -200,17 +235,17 @@ const SignatureDialog = (props) => {
               padding: "1rem 0"
             }}
           >
-            <Button style={{color: "white", background: "darkgray"}} onClick={() => setDoneStatus(false)}>Re-try</Button>
             <Button 
               style={{
                 color: "white", 
-                background: "blueviolet", 
+                background: doneStatus ? "darkgray" : "blueviolet", 
                 opacity: isEmpty ? 0.5 : 1, 
                 pointerEvents: isEmpty ? "none" : "auto",
                 cursor: isEmpty ? "not-allowed" : "pointer"
               }}
-              onClick={() => setDoneStatus(true)}
-            >Done
+              onClick={(prev) => setDoneStatus(prev => !prev)}
+            >
+              {doneStatus ? "Re-try" : "Done"}
             </Button>
           </Box>
         </Box>

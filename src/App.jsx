@@ -5,7 +5,8 @@ import GoogleFont from './googleFontIntegration/GoogleFont'
 
 function App() {
   const [count, setCount] = useState(0)
-
+  const [imageBaseURL, setImageBaseURL] = useState('')
+   console.log("Base64: ", imageBaseURL)
   return (
     <>
       <SignatureDialog
@@ -15,6 +16,7 @@ function App() {
         backgroundColor={true}
         pencilColor={true}
         pencilWidth={true}
+        setImageBaseURL={setImageBaseURL}
       />
       {/* <GoogleFont/> */}
     </>
