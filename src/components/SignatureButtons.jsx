@@ -1,16 +1,13 @@
-import { Box, Popover, TextField, Tooltip } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import React from 'react'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import GestureIcon from '@mui/icons-material/Gesture';
-import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
 import GetAppIcon from '@mui/icons-material/GetApp';
 import html2canvas from 'html2canvas';
 
 const SignatureButtons = (props) => {
-  const {styles, sigCanvas, sigWrite, reset, setIsEmpty, isEmpty, copy, type, bgColor, handleMode, setUserSign, setDownLoadPNG, setImageBaseURL, mode} = props;
-  const [textFieldAnchor, setTextFieldAnchor] = React.useState(null);
-  const openTextField = Boolean(textFieldAnchor);
+  const {styles, sigCanvas, sigWrite, reset, setIsEmpty, isEmpty, copy, bgColor, setDownLoadPNG, setImageBaseURL, mode} = props;
+
   const fillCanvasBackground = (color) => {
     if (sigCanvas.current) {
       const canvas = sigCanvas.current.getCanvas();
@@ -26,15 +23,18 @@ const SignatureButtons = (props) => {
   }
 
   const handleBaseImageURL = () => {
+    console.log("hggh : ", mode)
     if(mode?.type) {
       html2canvas(sigWrite.current)
       .then((canvas) => {
         const imageURL = canvas.toDataURL("image/png").split(",")[1];
-        setImageBaseURL(imageURL)
+        console.log(imageURL)
+        
+        setImageBaseURL && setImageBaseURL(imageURL)
       });
     } else{
       const imageURL = sigCanvas.current.toDataURL();
-      setImageBaseURL(imageURL)
+      setImageBaseURL && setImageBaseURL(imageURL)
     }
   }
 
@@ -69,37 +69,12 @@ const SignatureButtons = (props) => {
         className="actionBtn" 
         style={styles.actionBtn}
         onClick={() => {
+
           handleBaseImageURL()
         }}
       />
     }
-    <IconToolTip 
-      Icon={GestureIcon}
-      title="Draw"
-      className="writeBtn" 
-      style={styles.writeBtn} 
-      onClick={(e) => handleMode("draw")}
-    />
-    <Tooltip title="Write">
-      {type.isEnabled 
-        && 
-        <SortByAlphaIcon 
-          className="typeBtn" 
-          style={styles.typeBtn} 
-          onClick={(e) => {handleMode("type"), setTextFieldAnchor(e.currentTarget), setIsEmpty(false)}}
-        />
-      }
-      <Popover
-        open={openTextField}
-        anchorEl={textFieldAnchor}
-        onClose={() => setTextFieldAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      >
-        <Box style={{ padding: '0.5rem', width: 200, display: 'flex', alignItems: 'center', justifyContent:'center', gap:'1rem' }}>
-          <TextField id="standard-basic" label="Signature" variant="standard" onChange={(e) => setUserSign(e.target.value)}/>
-        </Box>
-      </Popover>
-    </Tooltip>
+   
     <IconToolTip 
       Icon={GetAppIcon}
       title="Download PNG"
