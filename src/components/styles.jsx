@@ -1,16 +1,4 @@
 const styles = {
-  main: {
-    width: '100%',
-    height: '100%',
-    minHeight: 0,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    animation: 'fadeIn 1s ease-in',
-    fontFamily: 'Arial, sans-serif',
-    boxSizing: 'border-box',
-    padding: '1rem',
-  },
 
   bodyContent: {
     display: 'flex',
@@ -84,64 +72,44 @@ const styles = {
     padding: 'clamp(0.3rem, 1vw, 0.8rem)',
   },
   actionBtn: {
-    width: 'clamp(2rem, 5vw, 3rem)',
-    height: 'clamp(2rem, 5vw, 3rem)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: '12px',
-    // background: 'linear-gradient(135deg, #ff7e5f, #feb47b)',
-    // color: '#fff',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
   },
 
   writeBtn: {
-    width: 'clamp(2rem, 5vw, 3rem)',
-    height: 'clamp(2rem, 5vw, 3rem)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: '12px',
-    // background: 'linear-gradient(135deg, #43cea2, #185a9d)',
-    // color: '#fff',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
   },
   closeIcon: {
-    width: 'clamp(2rem, 5vw, 1rem)',
-    height: 'clamp(2rem, 5vw, 1rem)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: '5px',
-    // background: 'linear-gradient(135deg, #F44336, rgb(157, 62, 24))',
-    // color: '#fff',
     cursor: 'pointer',
     transition: 'all 0.3s ease'
   },
   checkIcon: {
-    width: 'clamp(2rem, 5vw, 1rem)',
-    height: 'clamp(2rem, 5vw, 1rem)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: '5px',
-    // background: 'linear-gradient(135deg, #43cea2,rgb(24, 157, 35))',
-    // color: '#fff',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
   },
 
   typeBtn: {
-    width: 'clamp(2rem, 5vw, 3rem)',
-    height: 'clamp(2rem, 5vw, 3rem)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: '12px',
-    // background: 'linear-gradient(135deg, #f7971e, #ffd200)',
-    // color: '#fff',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
   },
@@ -151,7 +119,6 @@ const styles = {
     height: '60%',
   },
   
-
   userInput: {
     width: '100%',
     padding: '0.6rem',

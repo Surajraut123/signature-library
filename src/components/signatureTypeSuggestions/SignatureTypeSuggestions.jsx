@@ -4,14 +4,9 @@ import "../../fonts/fonts.css"
 
 const SignatureTypeSuggestions = (props) => {
 
-    const { userSign } = props;
+    const { userSign, penColor, bgColor, sigWrite} = props;
 
     const [selectedFont, setSelectedFont] = useState("Corinthia");
-    // const fonts = import.meta.glob('/src/assets/fonts/*.{ttf}');
-    // const fonts = import.meta.glob('../');
-    // console.log(Object.keys(fonts));
-
-
     const fontOptions = [
         "ImperialScript",
         "LavishlyYours",
@@ -40,16 +35,17 @@ const SignatureTypeSuggestions = (props) => {
     return (
         <Box sx={{height:'100%'}}>
             <Box 
+                ref={sigWrite}
                 sx={{    
                     height: "80%",
-                    background: "aliceblue",
+                    background: bgColor,
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center"
                 }}>
-                <Typography sx={{fontFamily: selectedFont, fontSize: '5rem'}}>{userSign}</Typography>
+                <Typography sx={{fontFamily: selectedFont, fontSize: '5rem', color: penColor}}>{userSign}</Typography>
             </Box>
-            <Box sx={{height:'20%', boxSizing:'border-box', display:'flex', gap: '0.8rem', alignItems:'center', width:'100%', overflow:'scroll'}}>
+            <Box sx={{height:'20%', boxSizing:'border-box', display:'flex', gap: '0.8rem', alignItems:'center', width:'100%', overflow:'scroll', backgroundColor: 'white'}}>
                 {
                     fontOptions.map((item, index) => (
                         <Typography 
