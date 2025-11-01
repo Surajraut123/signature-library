@@ -10,11 +10,13 @@ import ActionButtons from './ActionButtons';
 import SignatureButtons from './SignatureButtons';
 import SignatureTypeSuggestions from './signatureTypeSuggestions/SignatureTypeSuggestions';
 import html2canvas from 'html2canvas';
+import GestureIcon from '@mui/icons-material/Gesture';
+import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
 
 
 
 const SignatureDialog = (props) => {
-  const { reset, copy, type, backgroundColor, pencilColor, pencilWidth, setImageBaseURL} = props
+  const { reset, copy, type, backgroundColor, pencilColor, pencilWidth, setImageBaseURL, imageBaseURL, base64String} = props
   const sigCanvas = useRef({});
   const sigWrite = useRef({});
   const [color, setColor] = useState('#000000');
@@ -22,10 +24,11 @@ const SignatureDialog = (props) => {
   const [penWidth, setPenWidth] = React.useState(1);
   const containerRef = useRef(null);
   const scale = useResponsiveScale(containerRef);
-  const [isEmpty, setIsEmpty] = useState(true);
+  const [isEmpty, setIsEmpty] = useState(base64String ? false: true);
   const [doneStatus, setDoneStatus] = useState(false)
   const [userSign, setUserSign] = useState("")
   const [downloadPNG, setDownLoadPNG] = useState(false)
+  const[typeCompleteStatus, setTypeCompleteStatus] = useState(false)
   console.log("isEmpty in dialog: ", isEmpty)
 
   const [mode, setMode] = useState({
@@ -81,7 +84,7 @@ const SignatureDialog = (props) => {
       if (isEmpty) {
         return;
       }
-      console.log(sigCanvas.current)
+
       const canvas = sigCanvas.current.getCanvas();
       const dataURL = canvas.toDataURL('image/png');
 
@@ -96,14 +99,55 @@ const SignatureDialog = (props) => {
       }).then((canvas) => {
         const link = document.createElement("a");
         link.download = "signature.png";
-        const imageURL = canvas.toDataURL("image/png").split(",")[1];
-        setImageBaseURL(imageURL)
+        const imageURL = canvas.toDataURL("image/png");
+        setImageBaseURL && setImageBaseURL(imageURL)
         link.href = canvas.toDataURL("image/png")
         link.click();
       });
     }
   }, [downloadPNG])
+
+  useEffect(() => {
+    if (mode.draw && sigCanvas.current) {
+      const canvas = sigCanvas.current.getCanvas();
+      const ctx = canvas.getContext("2d");
   
+      const box = document.querySelector(".react-resizable");
+      if (canvas && box) {
+        const rect = box.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+      }
+      if (imageBaseURL) {
+        const ctx = canvas.getContext("2d");
+        const img = new Image();
+        img.src = imageBaseURL;
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        };
+      }
+    }
+  }, [mode.draw]);
+
+//   // Add this new useEffect after your existing useEffects
+// useEffect(() => {
+//   if (mode.draw && sigCanvas.current) {
+//     const canvas = sigCanvas.current.getCanvas();
+//     const box = document.querySelector(".react-resizable");
+//     if (canvas && box) {
+//       const rect = box.getBoundingClientRect();
+//       canvas.width = rect.width;
+//       canvas.height = rect.height;
+//       fillCanvasBackground(bgColor);
+//     }
+//   }
+// }, [mode.draw]);
+  
+
+  useEffect(() => {
+    if (!sigCanvas.current || !base64String) return;
+    sigCanvas.current.fromDataURL(base64String);
+  }, [base64String, mode]);
   
   
   return (
@@ -139,7 +183,15 @@ const SignatureDialog = (props) => {
               <ResizableBox
                 width={800}
                 height={400}
+                onResizeStart={() => {
+                  if (sigCanvas.current) {
+                    const img = new Image();
+                    img.src = sigCanvas.current.toDataURL();
+                    sigCanvas.current._lastImage = img;
+                  }
+                }}
                 onResizeStop={(e, data) => {
+                  if (!sigCanvas.current) return;
                   const canvas = sigCanvas.current.getCanvas();
                   if (canvas) {
                     canvas.width = data.size.width;
@@ -192,14 +244,28 @@ const SignatureDialog = (props) => {
                     penColor={color}
                     canvasProps={{ className: "sigCanvas" }}
                     onBegin={() => setIsEmpty(false)}
-                    onEnd={() => setIsEmpty(sigCanvas.current.isEmpty())} 
+                    onEnd={() => {
+                      if (!sigCanvas.current) return;
+                      setIsEmpty(sigCanvas.current.isEmpty()); 
+                      const canvas = sigCanvas.current.getCanvas();
+                      const offscreen = document.createElement("canvas");
+                      offscreen.width = canvas.width;
+                      offscreen.height = canvas.height;
+                      const offCtx = offscreen.getContext("2d");
+
+                      offCtx.fillStyle = bgColor;
+                      offCtx.fillRect(0, 0, offscreen.width, offscreen.height);
+                      offCtx.drawImage(canvas, 0, 0);
+
+                      const mergedBase64 = offscreen.toDataURL("image/png");
+                      setImageBaseURL && setImageBaseURL(mergedBase64);
+                    }} 
                     style={{
                       width: "100%",
                       height: "100%",
                       border: "2px dashed #ccc",
                       borderRadius: "15px",
                       cursor: "crosshair",
-                      backgroundColor: bgColor,
                     }}
                     minWidth={penWidth}
                     maxWidth={penWidth}
@@ -211,6 +277,11 @@ const SignatureDialog = (props) => {
                     bgColor={bgColor}
                     downloadPNG={downloadPNG}
                     sigWrite={sigWrite}
+                    setUserSign={setUserSign}
+                    setTypeCompleteStatus={setTypeCompleteStatus}
+                    typeCompleteStatus={typeCompleteStatus}
+                    setIsEmpty={setIsEmpty}
+                    doneStatus={doneStatus}
                   />
               }
               </ResizableBox>
@@ -235,13 +306,50 @@ const SignatureDialog = (props) => {
               padding: "1rem 0"
             }}
           >
+            {!doneStatus && <Button 
+              variant='contained'
+              startIcon={
+                <GestureIcon />
+              }
+              sx={{
+                '& .MuiButton-startIcon': {
+                  margin: 0,
+                },
+                backgroundColor: mode?.draw ? 'black' : "white",
+                color: mode?.draw ? 'white' : 'black',
+                border: mode?.draw && '1px solid',
+                borderRadius:'20px'
+              }}
+              onClick={() => handleMode("draw")}
+            >
+              Draw
+            </Button>}
+            {!doneStatus && <Button 
+              variant='contained'
+              startIcon={
+                <SortByAlphaIcon/>
+              }
+              sx={{
+                '& .MuiButton-startIcon': {
+                  marginRight: 0.5,
+                },
+                backgroundColor: mode?.draw ? 'white' : "black",
+                color:mode?.draw ? 'black': "white",
+                border: mode?.type && '1px solid',
+                borderRadius:'10px'
+              }}
+              onClick={() => {handleMode("type"); setTypeCompleteStatus(false)}}
+            >
+              Type
+            </Button>}
             <Button 
               style={{
                 color: "white", 
                 background: doneStatus ? "darkgray" : "blueviolet", 
                 opacity: isEmpty ? 0.5 : 1, 
                 pointerEvents: isEmpty ? "none" : "auto",
-                cursor: isEmpty ? "not-allowed" : "pointer"
+                cursor: isEmpty ? "not-allowed" : "pointer",
+                borderRadius:'10px'
               }}
               onClick={(prev) => setDoneStatus(prev => !prev)}
             >
