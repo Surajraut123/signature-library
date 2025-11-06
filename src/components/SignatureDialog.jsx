@@ -16,7 +16,7 @@ import SortByAlphaIcon from '@mui/icons-material/SortByAlpha';
 
 
 const SignatureDialog = (props) => {
-  const { reset, copy, type, backgroundColor, pencilColor, pencilWidth, setImageBaseURL, imageBaseURL, base64String} = props
+  const { reset=true, copy, type, backgroundColor, pencilColor, pencilWidth, setImageBaseURL, imageBaseURL, base64String} = props
   const sigCanvas = useRef({});
   const sigWrite = useRef({});
   const [color, setColor] = useState('#000000');
@@ -129,19 +129,6 @@ const SignatureDialog = (props) => {
     }
   }, [mode.draw]);
 
-//   // Add this new useEffect after your existing useEffects
-// useEffect(() => {
-//   if (mode.draw && sigCanvas.current) {
-//     const canvas = sigCanvas.current.getCanvas();
-//     const box = document.querySelector(".react-resizable");
-//     if (canvas && box) {
-//       const rect = box.getBoundingClientRect();
-//       canvas.width = rect.width;
-//       canvas.height = rect.height;
-//       fillCanvasBackground(bgColor);
-//     }
-//   }
-// }, [mode.draw]);
   
 
   useEffect(() => {
@@ -318,7 +305,7 @@ const SignatureDialog = (props) => {
                 backgroundColor: mode?.draw ? 'black' : "white",
                 color: mode?.draw ? 'white' : 'black',
                 border: mode?.draw && '1px solid',
-                borderRadius:'20px'
+                borderRadius:'10px'
               }}
               onClick={() => handleMode("draw")}
             >

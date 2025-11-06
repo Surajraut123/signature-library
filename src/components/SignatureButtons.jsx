@@ -4,6 +4,7 @@ import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GetAppIcon from '@mui/icons-material/GetApp';
 import html2canvas from 'html2canvas';
+import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
 
 const SignatureButtons = (props) => {
   const {styles, sigCanvas, sigWrite, reset, setIsEmpty, isEmpty, copy, bgColor, setDownLoadPNG, setImageBaseURL, mode} = props;
@@ -74,6 +75,14 @@ const SignatureButtons = (props) => {
         }}
       />
     }
+    <IconToolTip 
+      Icon={DriveFolderUploadIcon}
+      title="Upload font style (.ttf)"
+      className="upload"
+      style={{
+        ...styles.actionBtn,
+      }} 
+    />
    
     <IconToolTip 
       Icon={GetAppIcon}
